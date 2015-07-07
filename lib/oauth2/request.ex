@@ -7,6 +7,7 @@ defmodule OAuth2.Request do
 
   alias OAuth2.Error
   alias OAuth2.Response
+  require Logger
 
   def request(method, url, body \\ "", headers \\ [], opts \\ []) do
     content_type = content_type(headers)
