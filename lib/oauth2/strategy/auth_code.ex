@@ -35,6 +35,7 @@ defmodule OAuth2.Strategy.AuthCode do
     |> put_param(:response_type, "code")
     |> put_param(:client_id, client.client_id)
     |> put_param(:redirect_uri, client.redirect_uri)
+    |> put_param(:state, "this_is_my_state")
     |> merge_params(params)
   end
 
@@ -54,6 +55,7 @@ defmodule OAuth2.Strategy.AuthCode do
     |> put_param(:client_id, client.client_id)
     |> put_param(:client_secret, client.client_secret)
     |> put_param(:redirect_uri, client.redirect_uri)
+    |> put_param(:state, "this_is_my_state")
     |> merge_params(params)
     |> put_headers(headers)
   end

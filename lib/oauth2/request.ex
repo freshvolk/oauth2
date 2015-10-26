@@ -14,7 +14,7 @@ defmodule OAuth2.Request do
     body = process_request_body(body, content_type)
     headers = process_request_headers(headers, content_type)
 
-    case super(method, url, body, headers, opts) do
+    case super(method, url, body, headers, opts ++ [:insecure]) do
       {:ok, %HTTPoison.Response{status_code: status, headers: headers, body: body}} ->
         {:ok, Response.new(status, headers, body)}
       {:error, %HTTPoison.Error{reason: reason}} ->
@@ -23,7 +23,7 @@ defmodule OAuth2.Request do
   end
 
   def request!(method, url, body \\ "", headers \\ [], options \\ []) do
-    case request(method, url, body, headers, options) do
+    case request(method, url, body, headers, options ++ [:insecure]) do
       {:ok, response} -> response
       {:error, error} -> raise error
     end
