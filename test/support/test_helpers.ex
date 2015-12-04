@@ -1,7 +1,56 @@
 defmodule OAuth2.TestHelpers do
 
-  def call(mod, conn) do
-    mod.call(conn, [])
+  import Plug.Conn
+  import ExUnit.Assertions
+
+  def bypass_server(%Bypass{port: port}) do
+    "http://localhost:#{port}"
+  end
+
+  def bypass(server, method, path, fun) do
+    bypass(server, method, path, [], fun)
+  end
+  def bypass(server, method, path, opts, fun) do
+    {token, opts}   = Keyword.pop(opts, :token, nil)
+    {accept, _opts} = Keyword.pop(opts, :accept, "json")
+
+    Bypass.expect server, fn conn ->
+      conn = parse_req_body(conn)
+
+      assert conn.method == method
+      assert conn.request_path == path
+      assert_accepts(conn, accept)
+      assert_token(conn, token)
+
+      fun.(conn)
+    end
+  end
+
+  defp parse_req_body(conn) do
+    opts = [parsers: [:urlencoded, :json],
+            pass: ["*/*"],
+            json_decoder: Poison]
+    Plug.Parsers.call(conn, Plug.Parsers.init(opts))
+  end
+
+  defp assert_accepts(conn, accept) do
+    mime =
+      case accept do
+        "json" -> "application/json"
+        _      -> accept
+      end
+    assert get_req_header(conn, "accept") == [mime]
+  end
+
+  defp assert_token(_conn, nil), do: :ok
+  defp assert_token(conn, token) do
+    assert get_req_header(conn, "authorization") == ["Bearer #{token.access_token}"]
+  end
+
+  def json(conn, status, body \\ []) do
+    conn
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(status, Poison.encode!(body))
   end
 
   def build_client(opts \\ []) do
@@ -18,16 +67,12 @@ defmodule OAuth2.TestHelpers do
   end
 
   defp get_config(key) do
-    case Application.get_env(:oauth2, key) do
-      {:system, val} -> System.get_env(val)
-      val -> val
-    end
+    Application.get_env(:oauth2, key)
   end
 
   defp default_client_opts do
     [client_id: get_config(:client_id),
      client_secret: get_config(:client_secret),
-     site: get_config(:site),
      redirect_uri: get_config(:redirect_uri)]
   end
 

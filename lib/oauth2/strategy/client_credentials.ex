@@ -21,14 +21,14 @@ defmodule OAuth2.Strategy.ClientCredentials do
   Not used for this strategy.
   """
   def authorize_url(_client, _params) do
-    raise "Not implemented."
+    raise OAuth2.Error, reason: "This strategy does not implement `authorize_url`."
   end
 
   @doc """
   Retrieve an access token given the specified strategy.
   """
   def get_token(client, params, headers) do
-    {auth_scheme, params} = Dict.pop(params, :auth_scheme, "auth_header")
+    {auth_scheme, params} = Keyword.pop(params, :auth_scheme, "auth_header")
 
     client
     |> put_param(:grant_type, "client_credentials")

@@ -18,7 +18,7 @@ defmodule OAuth2.Request do
       {:ok, %HTTPoison.Response{status_code: status, headers: headers, body: body}} ->
         {:ok, Response.new(status, headers, body)}
       {:error, %HTTPoison.Error{reason: reason}} ->
-        {:ok, %Error{reason: reason}}
+        {:error, %Error{reason: reason}}
     end
   end
 
@@ -33,7 +33,8 @@ defmodule OAuth2.Request do
     [{"Accept", content_type} | headers]
 
   defp process_request_body("", _), do: ""
+  defp process_request_body([], _), do: ""
   defp process_request_body(body, "application/json"), do: Poison.encode!(body)
   defp process_request_body(body, "application/x-www-form-urlencoded"), do:
-    Plug.Conn.Query.encode(body)
+    URI.encode_query(body)
 end

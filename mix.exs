@@ -1,7 +1,7 @@
 defmodule OAuth2.Mixfile do
   use Mix.Project
 
-  @version "0.4.0"
+  @version "0.5.0"
 
   def project do
     [app: :oauth2,
@@ -17,16 +17,16 @@ defmodule OAuth2.Mixfile do
   end
 
   def application do
-    [applications: [:httpoison, :poison, :plug]]
+    [applications: [:httpoison, :poison, :mimetype_parser]]
   end
 
   defp deps do
     [{:httpoison, "~> 0.7"},
      {:poison, "~> 1.3"},
-     {:plug, "~> 1.0"},
+     {:mimetype_parser, "~> 0.1"},
 
      # Test dependencies
-     {:cowboy, "~> 1.0", optional: true},
+     {:bypass, "~> 0.1", only: :test},
      {:excoveralls, "~> 0.3", only: :test},
 
      # Docs dependencies
