@@ -13,8 +13,15 @@ defmodule OAuth2.Request do
     content_type = content_type(headers)
     body = process_request_body(body, content_type)
     headers = process_request_headers(headers, content_type)
+    options = Keyword.merge(opts, [hackney: [:insecure]], fn (_k, v1, v2) ->
+               if is_list(v1) and is_list(v2) do
+                 v1 ++ v2
+               else
+                 v2
+               end
+             end)
 
-    case super(method, url, body, headers, opts ++ [:insecure]) do
+    case super(method, url, body, headers, options) do
       {:ok, %HTTPoison.Response{status_code: status, headers: headers, body: body}} ->
         {:ok, Response.new(status, headers, body)}
       {:error, %HTTPoison.Error{reason: reason}} ->
